@@ -5,16 +5,20 @@ import com.example.capstoneii.models.Title;
 import com.example.capstoneii.models.Regulation;
 import com.example.capstoneii.service.RegulationService;
 import com.example.capstoneii.service.TreeViewService;
+import com.example.capstoneii.service.QueryProcessorService;
 
+import com.example.capstoneii.utils.datastructures.LinkedList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
+import javafx.scene.control.TextField;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -38,8 +42,12 @@ public class HelloController implements Initializable {
     @FXML
     private Label artDesclbl;
 
+    @FXML
+    private TextField searchTextField;
+
 
     private final RegulationService regulationService;
+    private final QueryProcessorService queryProcessorService = new QueryProcessorService();
 
     public HelloController() {
         this.regulationService = new RegulationService();
@@ -80,6 +88,8 @@ public class HelloController implements Initializable {
             }
         }
     }
+
+
 
     private File showFileSelectionDialog() {
         FileChooser fileChooser = new FileChooser();
@@ -185,5 +195,32 @@ public class HelloController implements Initializable {
         Titlelbl.setText(title);
         artNamelbl.setText(article);
         artDesclbl.setText(description);
+    }
+
+    public void searchQuery(ActionEvent actionEvent) {
+
+        String query = searchTextField.getText();
+
+
+        if (!regulationService.hasRegulationLoaded()) {
+            showSearchError("Please load a regulation file first");
+            return;
+        }
+
+        if (query == null || query.trim().isEmpty()) {
+            showSearchError("Please enter a search query");
+            return;
+        }
+
+        LinkedList<String> result = queryProcessorService.processQuery(query);
+        result.forEach(System.out::println);
+    }
+
+    public void showSearchError(String errorMessage) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setHeaderText(null);
+        alert.setTitle("Error");
+        alert.setContentText(errorMessage);
+        alert.showAndWait();
     }
 }
