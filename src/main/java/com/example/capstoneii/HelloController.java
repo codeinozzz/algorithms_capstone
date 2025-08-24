@@ -1,8 +1,10 @@
 package com.example.capstoneii;
 
 import com.example.capstoneii.models.Article;
+import com.example.capstoneii.models.SearchResultItem;
 import com.example.capstoneii.models.Title;
 import com.example.capstoneii.models.Regulation;
+import com.example.capstoneii.service.ConsultorioService;
 import com.example.capstoneii.service.RegulationService;
 import com.example.capstoneii.service.TreeViewService;
 import com.example.capstoneii.service.QueryProcessorService;
@@ -48,6 +50,8 @@ public class HelloController implements Initializable {
 
     private final RegulationService regulationService;
     private final QueryProcessorService queryProcessorService = new QueryProcessorService();
+    private final ConsultorioService consultorioService = new ConsultorioService();
+
 
     public HelloController() {
         this.regulationService = new RegulationService();
@@ -104,6 +108,8 @@ public class HelloController implements Initializable {
 
     private void loadFile(File file) throws IOException {
         regulationService.loadRegulation(file);
+        consultorioService.loadRegulation(regulationService.getCurrentRegulation()); // NEW LINE
+
     }
 
     private void updateTreeView() {
@@ -197,10 +203,9 @@ public class HelloController implements Initializable {
         artDesclbl.setText(description);
     }
 
+    @FXML
     public void searchQuery(ActionEvent actionEvent) {
-
         String query = searchTextField.getText();
-
 
         if (!regulationService.hasRegulationLoaded()) {
             showSearchError("Please load a regulation file first");
@@ -212,8 +217,19 @@ public class HelloController implements Initializable {
             return;
         }
 
-        LinkedList<String> result = queryProcessorService.processQuery(query);
-        result.forEach(System.out::println);
+        LinkedList<SearchResultItem> results = consultorioService.performQuery(query);
+        consultorioService.showArticles(results);
+
+        // Show in UI
+        if (results.isEmpty()) {
+            updateInformationPanel("SEARCH RESULTS", "No results",
+                    "No articles found for: \"" + query + "\"");
+        } else {
+            SearchResultItem first = results.get(0);
+            updateInformationPanel("SEARCH RESULTS",
+                    "Art " + first.getArticleNumber() + " (" + first.getRelevancePercentage() + ")",
+                    first.getArticleContent());
+        }
     }
 
     public void showSearchError(String errorMessage) {

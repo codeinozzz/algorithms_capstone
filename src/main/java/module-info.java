@@ -6,6 +6,7 @@ module com.example.capstoneii {
     requires com.dlsc.formsfx;
     requires org.kordamp.bootstrapfx.core;
     requires java.desktop;
+    requires kotlin.stdlib;
 
     opens com.example.capstoneii to javafx.fxml;
     exports com.example.capstoneii;
